@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+!.env.example
+
+# local study data (sessions, uploads, event logs)
+/data/
+/public/pdf.worker.min.mjs

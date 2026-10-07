@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chiron — V0 prototype
 
-## Getting Started
+A study companion for college STEM problem-solving. It sits in the margin of the student's
+material and gives the **smallest correct intervention** that lets them continue.
 
-First, run the development server:
+- Spec: [`docs/SPEC.md`](docs/SPEC.md) · Plan & decisions: [`docs/PLAN.md`](docs/PLAN.md) · Demo script: [`docs/DEMO.md`](docs/DEMO.md)
+
+## Run it
+
+Requires Node 20+.
+
+```bash
+npm install
+```
+
+Put an **Anthropic or Google Gemini** API key in `.env.local` (already created, gitignored, server-side only).
+The provider is detected from the key: `sk-ant-…` is Anthropic, anything else is treated as Gemini.
+
+```
+LLM_API_KEY=your-key
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| URL | What |
+|---|---|
+| `/` | Home: demo, your own material, recent sessions |
+| `/demo` | Fresh seeded demo session (Problem 7.18) |
+| `/start` | Two-screen onboarding: upload a PDF or paste a screenshot, then your profile |
+| `/session/<id>/summary` | Internal research summary for one session |
+| `/research` | All sessions, Chiron vs. baseline |
+| `?mode=baseline` | Hidden toggle on `/`, `/demo` or `/start`: same UI, plain tutor |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Configuration (`.env.local`)
 
-## Learn More
+| Variable | Default | |
+|---|---|---|
+| `LLM_API_KEY` | — | Anthropic or Gemini key. Required. |
+| `LLM_PROVIDER` | detected | `anthropic` or `gemini`, to override detection. |
+| `LLM_MODEL` | `claude-opus-5-5` / `gemini-flash-latest` | Any vision-capable model of that provider (e.g. `gemini-pro-latest`). |
+| `LLM_EFFORT` | model default | `low` / `medium` / `high` thinking. Low is faster but tends to hand over more of the solution. |
+| `LLM_MOCK` | — | `1` = offline scripted tutor for UI work only. Labelled "mock tutor" in the UI. |
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run check
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Runs typecheck, lint and a production build.
 
-## Deploy on Vercel
+## Data
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Everything is stored locally in `data/` (gitignored): profiles, sessions, uploaded documents and
+page images, and one JSONL event log per session (`/api/sessions/<id>/events`). Delete the folder
+to reset.

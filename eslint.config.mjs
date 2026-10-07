@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored pdf.js worker (copied by postinstall) and local study data.
+    "public/pdf.worker.min.mjs",
+    "data/**",
   ]),
 ]);
 
