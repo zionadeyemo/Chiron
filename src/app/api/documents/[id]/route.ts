@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { db, NotFoundError } from "@/lib/db";
+import { getDocument } from "@/lib/documents";
 import { handle } from "@/lib/http";
-import { NotFoundError } from "@/lib/session";
-import { getDocument, updateDocument } from "@/lib/store";
+import type { DocumentMeta } from "@/lib/types";
 
 const Patch = z.object({
   pageCount: z.number().int().min(1).max(5000).optional(),
@@ -21,7 +22,6 @@ export async function PATCH(req: Request, ctx: RouteContext<"/api/documents/[id]
   const { id } = await ctx.params;
   return handle(async () => {
     const patch = Patch.parse(await req.json());
-    if (!(await getDocument(id))) throw new NotFoundError("document not found");
-    return { document: await updateDocument(id, (d) => ({ ...d, ...patch })) };
+    return { document: await db().update<DocumentMeta>("documents", id, (d) => ({ ...d, ...patch })) };
   });
 }

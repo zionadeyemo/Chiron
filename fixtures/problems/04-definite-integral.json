@@ -1,0 +1,124 @@
+{
+  "id": "04-definite-integral",
+  "title": "Integral of x·eˣ from 0 to 1",
+  "match": "integration by parts",
+  "statement": "Evaluate the definite integral $\\displaystyle\\int_0^1 x e^{x}\\,dx$ using integration by parts.",
+  "knownAnswer": {
+    "description": "1",
+    "values": {
+      "I": "1"
+    }
+  },
+  "setup": {
+    "given": [
+      "Integrand $x e^{x}$ on $[0, 1]$"
+    ],
+    "find": [
+      "$I = \\int_0^1 x e^{x}\\,dx$"
+    ],
+    "assumptions": []
+  },
+  "referencePlan": {
+    "method": "Integration by parts with u = x, dv = e^x dx.",
+    "steps": [
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('x', x)",
+            "rhs": "1",
+            "variables": [
+              "x"
+            ]
+          },
+          {
+            "type": "equivalence",
+            "lhs": "diff('exp(x)', x)",
+            "rhs": "exp(x)",
+            "variables": [
+              "x"
+            ]
+          }
+        ],
+        "concepts": [
+          "integration by parts"
+        ],
+        "kind": "equation",
+        "title": "Choose u and dv",
+        "latex": "u = x,\\quad dv = e^{x}\\,dx \\qquad\\Rightarrow\\qquad du = dx,\\quad v = e^{x}",
+        "rationale": "Differentiating x simplifies it; e^x integrates to itself.",
+        "hint1": "Which factor gets simpler when you differentiate it?",
+        "hint2": "Take u = x and dv = e^x dx, then find du and v.",
+        "checkQuestion": "What would go wrong if you chose u = e^x instead?"
+      },
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('x*exp(x) - exp(x)', x)",
+            "rhs": "x*exp(x)",
+            "variables": [
+              "x"
+            ]
+          }
+        ],
+        "concepts": [
+          "integration by parts"
+        ],
+        "kind": "equation",
+        "title": "Apply the formula",
+        "latex": "\\int x e^{x}\\,dx = x e^{x} - \\int e^{x}\\,dx = x e^{x} - e^{x} + C",
+        "rationale": "∫u dv = uv − ∫v du.",
+        "hint1": "Write out uv − ∫v du with your u and v.",
+        "hint2": "uv = x e^x and ∫v du = ∫e^x dx."
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "(1*exp(1) - exp(1)) - (0*exp(0) - exp(0))",
+            "expected": 1
+          }
+        ],
+        "concepts": [
+          "definite integrals"
+        ],
+        "kind": "substitution",
+        "title": "Evaluate at the bounds",
+        "latex": "\\Big[x e^{x} - e^{x}\\Big]_0^1 = (e - e) - (0 - 1)",
+        "rationale": "Upper bound minus lower bound.",
+        "hint1": "Plug in 1, then 0, and subtract.",
+        "hint2": "At x = 1 the two terms cancel; at x = 0 only −e^0 survives."
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "nint('x*exp(x)', x, 0, 1)",
+            "expected": 1
+          }
+        ],
+        "concepts": [
+          "definite integrals"
+        ],
+        "kind": "result",
+        "title": "Value",
+        "latex": "\\int_0^1 x e^{x}\\,dx = 1",
+        "rationale": "Confirmed numerically.",
+        "hint1": "Simplify the bracket.",
+        "hint2": "Simplify each bracket separately: the upper-bound terms cancel.",
+        "resultEquation": "I = 1"
+      }
+    ],
+    "finalAnswer": {
+      "latex": "1",
+      "value": 1
+    },
+    "solution": [
+      {
+        "symbol": "I",
+        "value": "1"
+      }
+    ]
+  }
+}

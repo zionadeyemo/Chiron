@@ -14,15 +14,21 @@ export function StartDemo() {
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    api.createSession({ kind: "demo", mode }).then(
-      ({ id }) => router.replace(`/session/${id}`),
+    api.demo(mode).then(
+      ({ courseId }) => router.replace(`/course/${courseId}`),
       (e) => setError(e.message),
     );
   }, [mode, router]);
 
   return (
     <main className="flex h-screen items-center justify-center">
-      {error ? <p className="font-serif text-oxblood">{error}</p> : <span className="breathe inline-block h-2 w-2 rounded-full bg-chiron" />}
+      {error ? (
+        <p className="font-serif text-oxblood">{error}</p>
+      ) : (
+        <p className="flex items-center gap-3 font-serif text-[16px] text-muted italic">
+          <span className="breathe inline-block h-2 w-2 rounded-full bg-chiron" /> Setting up Problem 7.18…
+        </p>
+      )}
     </main>
   );
 }

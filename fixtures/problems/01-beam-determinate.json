@@ -1,0 +1,125 @@
+{
+  "id": "01-beam-determinate",
+  "title": "Simply supported beam reactions",
+  "match": "point load of 12 kn at 2 m from a",
+  "statement": "A simply supported beam AB of length 6 m (pin at A, roller at B) carries a point load of 12 kN at 2 m from A and a uniformly distributed load of 3 kN/m over its full length. Determine the vertical reactions at A and B.",
+  "knownAnswer": {
+    "description": "R_A = 17 kN, R_B = 13 kN",
+    "values": {
+      "R_A": "17",
+      "R_B": "13"
+    }
+  },
+  "setup": {
+    "given": [
+      "Span $L = 6\\ \\text{m}$; pin at $A$, roller at $B$",
+      "Point load $P = 12\\ \\text{kN}$ at $2\\ \\text{m}$ from $A$",
+      "Uniform load $w = 3\\ \\text{kN/m}$ over the full span"
+    ],
+    "find": [
+      "Vertical reactions $R_A$ and $R_B$"
+    ],
+    "assumptions": []
+  },
+  "referencePlan": {
+    "method": "Moments about A for R_B, then vertical equilibrium for R_A.",
+    "steps": [
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "(12*2 + 3*6*3)/6",
+            "expected": 13
+          }
+        ],
+        "concepts": [
+          "static equilibrium",
+          "distributed load resultant"
+        ],
+        "kind": "equation",
+        "title": "Sum moments about A",
+        "latex": "\\sum M_A = 0:\\quad R_B(6) - 12(2) - (3)(6)(3) = 0",
+        "rationale": "Taking moments about A removes R_A from the equation, leaving R_B as the only unknown.",
+        "hint1": "Which point can you take moments about so that one reaction disappears?",
+        "hint2": "Sum moments about A. Treat the distributed load as its resultant acting at midspan.",
+        "checkQuestion": "Why does R_A drop out of this equation?",
+        "resultEquation": "R_B*6 - 12*2 - 3*6*3 = 0"
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "(24 + 54)/6",
+            "expected": 13
+          }
+        ],
+        "concepts": [
+          "static equilibrium"
+        ],
+        "kind": "algebra",
+        "title": "Solve for R_B",
+        "latex": "R_B = \\frac{24 + 54}{6} = 13\\ \\text{kN}",
+        "rationale": "The moment equation has one unknown; solve it.",
+        "hint1": "Collect the load moments on one side.",
+        "hint2": "Divide the total load moment about A by the span.",
+        "resultEquation": "R_B = 13"
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "12 + 3*6 - 13",
+            "expected": 17
+          }
+        ],
+        "concepts": [
+          "static equilibrium"
+        ],
+        "kind": "equation",
+        "title": "Vertical equilibrium",
+        "latex": "\\sum F_y = 0:\\quad R_A + R_B - 12 - (3)(6) = 0",
+        "rationale": "With R_B known, the vertical force balance gives R_A.",
+        "hint1": "What else must balance besides moments?",
+        "hint2": "Sum vertical forces: both reactions against the point load and the total distributed load.",
+        "resultEquation": "R_A + R_B - 12 - 18 = 0"
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "30 - 13",
+            "expected": 17
+          },
+          {
+            "type": "numeric",
+            "expr": "17 + 13",
+            "expected": 30
+          }
+        ],
+        "concepts": [
+          "static equilibrium"
+        ],
+        "kind": "result",
+        "title": "Reactions",
+        "latex": "R_A = 17\\ \\text{kN}, \\qquad R_B = 13\\ \\text{kN}",
+        "rationale": "Both reactions found; they add up to the total load of 30 kN.",
+        "hint1": "You have both equations; finish the arithmetic.",
+        "hint2": "Subtract R_B from the total vertical load.",
+        "resultEquation": "R_A = 17"
+      }
+    ],
+    "finalAnswer": {
+      "latex": "R_A = 17\\ \\text{kN},\\ R_B = 13\\ \\text{kN}"
+    },
+    "solution": [
+      {
+        "symbol": "R_A",
+        "value": "17"
+      },
+      {
+        "symbol": "R_B",
+        "value": "13"
+      }
+    ]
+  }
+}

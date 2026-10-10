@@ -44,3 +44,9 @@ next-env.d.ts
 # local study data (sessions, uploads, event logs)
 /data/
 /public/pdf.worker.min.mjs
+
+# end-to-end test server build + data, Playwright output
+/.next-e2e/
+/.e2e-data/
+/test-results/
+/playwright-report/

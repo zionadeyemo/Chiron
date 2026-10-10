@@ -63,10 +63,3 @@ export function PdfPageView({ documentId, page }: { documentId: string; page: nu
     </div>
   );
 }
-
-export function ScreenshotView({ documentId, title }: { documentId: string; title: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- local, already-sized user upload
-    <img src={`/api/documents/${documentId}/file`} alt={title} className="mx-auto block h-auto max-w-full" />
-  );
-}

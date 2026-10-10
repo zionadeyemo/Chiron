@@ -17,6 +17,7 @@
   --verified: #3c6a48;
   --marker: #f1dfa6; /* highlighter */
   --focus: #24465c;
+  --student: #6a4a1f; /* the student's own hand: warm pencil brown */
 }
 
 @theme inline {
@@ -34,249 +35,302 @@
   --color-oxblood: var(--oxblood);
   --color-verified: var(--verified);
   --color-marker: var(--marker);
+  --color-student: var(--student);
   --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-html,
-body {
-  background: var(--desk);
-  color: var(--ink);
-}
-
-body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-::selection {
-  background: var(--marker);
-  color: inherit;
-}
-
-:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  border-radius: 2px;
-}
-
-/* Small-caps mono labels used across the strip and controls. */
-.label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* ── Material typography (the "textbook") ─────────────────────────────── */
-.prose-material {
-  font-family: var(--font-serif);
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--ink);
-  font-variation-settings: "opsz" 16;
-}
-.prose-material h1 {
-  font-size: 30px;
-  line-height: 1.15;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  margin: 0 0 1.1rem;
-  font-variation-settings: "opsz" 72;
-}
-.prose-material h2 {
-  font-size: 21px;
-  font-weight: 600;
-  margin: 1.8rem 0 0.6rem;
-  font-variation-settings: "opsz" 36;
-}
-.prose-material h3 {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 500;
-  margin: 1.6rem 0 0.5rem;
-}
-.prose-material p {
-  margin: 0.65rem 0;
-}
-.prose-material ul,
-.prose-material ol {
-  margin: 0.6rem 0 0.6rem 1.3rem;
-}
-.prose-material ul {
-  list-style: disc;
-}
-.prose-material ol {
-  list-style: decimal;
-}
-.prose-material li {
-  margin: 0.25rem 0;
-  padding-left: 0.2rem;
-}
-.prose-material table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 15.5px;
-}
-.prose-material th {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 500;
-  text-align: left;
-  border-bottom: 1px solid var(--ink-soft);
-  padding: 0.35rem 0.6rem 0.35rem 0;
-}
-.prose-material td {
-  border-bottom: 1px solid var(--rule);
-  padding: 0.45rem 0.6rem 0.45rem 0;
-  vertical-align: middle;
-}
-.prose-material strong {
-  font-weight: 600;
-}
-.prose-material .katex-display {
-  margin: 0.9rem 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.15rem 0;
-}
-
-/* ── Chiron's margin notes ─────────────────────────────────────────────── */
-.prose-note {
-  font-family: var(--font-serif);
-  font-size: 16.5px;
-  line-height: 1.5;
-  color: var(--chiron);
-  font-variation-settings: "opsz" 14;
-}
-.prose-note p {
-  margin: 0 0 0.45rem;
-}
-.prose-note p:last-child {
-  margin-bottom: 0;
-}
-.prose-note ol,
-.prose-note ul {
-  margin: 0.3rem 0 0.5rem 1.15rem;
-}
-.prose-note ol {
-  list-style: decimal;
-}
-.prose-note ul {
-  list-style: disc;
-}
-.prose-note li {
-  margin: 0.15rem 0;
-}
-.prose-note strong {
-  font-weight: 600;
-}
-.prose-note code {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
-}
-.prose-note .katex-display {
-  margin: 0.4rem 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-/* ── pdf.js text layer (transparent selectable text over the canvas) ───── */
-.textLayer {
-  position: absolute;
-  inset: 0;
-  overflow: clip;
-  opacity: 1;
-  line-height: 1;
-  text-size-adjust: none;
-  forced-color-adjust: none;
-  transform-origin: 0 0;
-  z-index: 0;
-  --min-font-size: 1;
-  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
-  --min-font-size-inv: calc(1 / var(--min-font-size));
-}
-.textLayer :is(span, br) {
-  color: transparent;
-  position: absolute;
-  white-space: pre;
-  cursor: text;
-  transform-origin: 0% 0%;
-}
-.textLayer > :not(.markedContent),
-.textLayer .markedContent span:not(.markedContent) {
-  z-index: 1;
-  --font-height: 0;
-  font-size: calc(var(--text-scale-factor) * var(--font-height));
-  --scale-x: 1;
-  --rotate: 0deg;
-  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
-}
-.textLayer .markedContent {
-  display: contents;
-}
-.textLayer ::selection {
-  background: color-mix(in srgb, var(--marker), transparent 25%);
-  color: transparent;
-}
-.textLayer .endOfContent {
-  display: block;
-  position: absolute;
-  inset: 100% 0 0;
-  z-index: 0;
-  cursor: default;
-  user-select: none;
-}
-
-/* Waiting indicator: a single ink dot breathing, nothing louder. */
-@keyframes breathe {
-  0%,
-  100% {
-    opacity: 0.25;
+/* Custom CSS lives in layers so Tailwind utilities (text-chiron, outline-none…) override it. */
+@layer base {
+  html,
+  body {
+    background: var(--desk);
+    color: var(--ink);
   }
-  50% {
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--marker);
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+}
+
+@layer components {
+  /* Small-caps mono labels used across the strip and controls. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── Material typography (the "textbook") ─────────────────────────────── */
+  .prose-material {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-variation-settings: "opsz" 16;
+  }
+  .prose-material h1 {
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.1rem;
+    font-variation-settings: "opsz" 72;
+  }
+  .prose-material h2 {
+    font-size: 21px;
+    font-weight: 600;
+    margin: 1.8rem 0 0.6rem;
+    font-variation-settings: "opsz" 36;
+  }
+  .prose-material h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin: 1.6rem 0 0.5rem;
+  }
+  .prose-material p {
+    margin: 0.65rem 0;
+  }
+  .prose-material ul,
+  .prose-material ol {
+    margin: 0.6rem 0 0.6rem 1.3rem;
+  }
+  .prose-material ul {
+    list-style: disc;
+  }
+  .prose-material ol {
+    list-style: decimal;
+  }
+  .prose-material li {
+    margin: 0.25rem 0;
+    padding-left: 0.2rem;
+  }
+  .prose-material table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 15.5px;
+  }
+  .prose-material th {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    text-align: left;
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 0.35rem 0.6rem 0.35rem 0;
+  }
+  .prose-material td {
+    border-bottom: 1px solid var(--rule);
+    padding: 0.45rem 0.6rem 0.45rem 0;
+    vertical-align: middle;
+  }
+  .prose-material strong {
+    font-weight: 600;
+  }
+  .prose-material .katex-display {
+    margin: 0.9rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.15rem 0;
+  }
+
+  /* ── Chiron's margin notes ─────────────────────────────────────────────── */
+  .prose-note {
+    font-family: var(--font-serif);
+    font-size: 16.5px;
+    line-height: 1.5;
+    color: var(--chiron);
+    font-variation-settings: "opsz" 14;
+  }
+  .prose-note p {
+    margin: 0 0 0.45rem;
+  }
+  .prose-note p:last-child {
+    margin-bottom: 0;
+  }
+  .prose-note ol,
+  .prose-note ul {
+    margin: 0.3rem 0 0.5rem 1.15rem;
+  }
+  .prose-note ol {
+    list-style: decimal;
+  }
+  .prose-note ul {
+    list-style: disc;
+  }
+  .prose-note li {
+    margin: 0.15rem 0;
+  }
+  .prose-note strong {
+    font-weight: 600;
+  }
+  .prose-note code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+  .prose-note .katex-display {
+    margin: 0.4rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  /* ── pdf.js text layer (transparent selectable text over the canvas) ───── */
+  .textLayer {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
     opacity: 1;
+    line-height: 1;
+    text-size-adjust: none;
+    forced-color-adjust: none;
+    transform-origin: 0 0;
+    z-index: 0;
+    --min-font-size: 1;
+    --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+    --min-font-size-inv: calc(1 / var(--min-font-size));
   }
-}
-.breathe {
-  animation: breathe 1.4s ease-in-out infinite;
-}
+  .textLayer :is(span, br) {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+  }
+  .textLayer > :not(.markedContent),
+  .textLayer .markedContent span:not(.markedContent) {
+    z-index: 1;
+    --font-height: 0;
+    font-size: calc(var(--text-scale-factor) * var(--font-height));
+    --scale-x: 1;
+    --rotate: 0deg;
+    transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+  }
+  .textLayer .markedContent {
+    display: contents;
+  }
+  .textLayer ::selection {
+    background: color-mix(in srgb, var(--marker), transparent 25%);
+    color: transparent;
+  }
+  .textLayer .endOfContent {
+    display: block;
+    position: absolute;
+    inset: 100% 0 0;
+    z-index: 0;
+    cursor: default;
+    user-select: none;
+  }
 
-@keyframes settle {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
+  /* Waiting indicator: a single ink dot breathing, nothing louder. */
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 1;
+    }
   }
-  to {
-    opacity: 1;
-    transform: none;
+  .breathe {
+    animation: breathe 1.4s ease-in-out infinite;
   }
-}
-.settle {
-  animation: settle 0.28s ease-out both;
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .breathe,
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
   .settle {
-    animation: none;
+    animation: settle 0.28s ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breathe,
+    .settle {
+      animation: none;
+    }
+  }
+
+  /* Thin, paper-toned scrollbars. */
+
+  .prose-material > div:first-child > :first-child {
+    margin-top: 0;
+  }
+
+  /* ── Whiteboard ───────────────────────────────────────────────────────── */
+  .student-hand .board-math .katex,
+  .student-hand-text {
+    color: var(--student);
+  }
+  .student-hand-text {
+    font-family: var(--font-serif);
+    font-style: italic;
+  }
+
+  @keyframes wipe {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  .reveal {
+    animation: wipe 0.32s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      animation: none;
+    }
   }
 }
 
-/* Thin, paper-toned scrollbars. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--rule) transparent;
+/* KaTeX ships unlayered CSS, so overrides of it must be unlayered too. */
+.board-math .katex-display {
+  margin: 0.25rem 0;
+  text-align: left;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.1rem 0;
 }
-.prose-material > div:first-child > :first-child {
-  margin-top: 0;
+.board-math .katex-display > .katex {
+  text-align: left;
+}
+.board-math .katex {
+  font-size: 1.12em;
+  color: var(--ink);
 }

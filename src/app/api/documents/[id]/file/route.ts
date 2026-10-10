@@ -1,11 +1,10 @@
-import { getDocument, readDocumentFile } from "@/lib/store";
+import { db } from "@/lib/db";
 
 export async function GET(_req: Request, ctx: RouteContext<"/api/documents/[id]/file">) {
   const { id } = await ctx.params;
-  const doc = await getDocument(id).catch(() => null);
-  const bytes = doc ? await readDocumentFile(id, "original") : null;
-  if (!doc || !bytes) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(bytes), {
-    headers: { "Content-Type": doc.mimeType ?? "application/octet-stream", "Cache-Control": "private, max-age=3600" },
+  const blob = /^d_[a-z0-9]{12}$/.test(id) ? await db().getBlob(`${id}/original`) : null;
+  if (!blob) return new Response("not found", { status: 404 });
+  return new Response(new Uint8Array(blob.data), {
+    headers: { "Content-Type": blob.contentType, "Cache-Control": "private, max-age=3600" },
   });
 }

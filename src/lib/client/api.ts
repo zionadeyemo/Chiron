@@ -1,6 +1,7 @@
 "use client";
 
-import type { ConceptState, DepthStyle, DocumentMeta, FeedbackKind, Location, SessionBundle, UserProfile } from "../types";
+import type { CourseSummary, WorkspaceView } from "../board/types";
+import type { ConceptState, DepthStyle, DocumentMeta, Mode } from "../types";
 
 export class ApiError extends Error {
   constructor(
@@ -14,68 +15,74 @@ export class ApiError extends Error {
 
 async function call<T>(url: string, init?: RequestInit & { json?: unknown }): Promise<T> {
   const { json, ...rest } = init ?? {};
-  const res = await fetch(url, {
-    ...rest,
-    headers: json !== undefined ? { "Content-Type": "application/json", ...rest.headers } : rest.headers,
-    body: json !== undefined ? JSON.stringify(json) : rest.body,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...rest,
+      headers: json !== undefined ? { "Content-Type": "application/json", ...rest.headers } : rest.headers,
+      body: json !== undefined ? JSON.stringify(json) : rest.body,
+    });
+  } catch {
+    throw new ApiError("Couldn't reach the server. Check that it's running.", 0);
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data.error ?? `Request failed (${res.status})`, res.status, data.code);
   return data as T;
 }
 
+export type BoardActionInput =
+  | { type: "activate" | "fill" | "too_big" | "too_small"; stepIndex: number }
+  | { type: "next" | "hint" | "got_it" | "resume" | "dismiss_check" }
+  | { type: "answer_check"; answer: string };
+
+export type ComposerMode = "normal" | "new_problem" | "my_work";
+
 export const api = {
-  status: () => call<{ tutor: "live" | "mock" | "no_key"; provider?: string; model?: string }>("/api/status"),
+  status: () => call<{ tutor: "live" | "mock" | "no_key"; provider?: string; models?: { strong: string; fast: string } }>("/api/status"),
 
-  createSession: (body: { kind: "demo" | "material"; mode: "chiron" | "baseline"; documentId?: string }) =>
-    call<{ id: string }>("/api/sessions", { method: "POST", json: body }),
+  listCourses: () => call<CourseSummary[]>("/api/courses"),
+  createCourse: (name: string, mode: Mode) => call<{ course: CourseSummary["course"] }>("/api/courses", { method: "POST", json: { name, mode } }),
+  demo: (mode: Mode) => call<{ courseId: string }>("/api/demo", { method: "POST", json: { mode } }),
 
-  listSessions: () =>
-    call<
-      { id: string; mode: string; isDemo: boolean; course: string; task: string; turns: number; startedAt: string; lastActiveAt: string }[]
-    >("/api/sessions"),
+  updateCourse: (courseId: string, body: { sessionId?: string; name?: string; archived?: boolean; personalize?: boolean }) =>
+    call<WorkspaceView & { course: CourseSummary["course"] }>(`/api/courses/${courseId}`, { method: "PATCH", json: body }),
+  editConcept: (courseId: string, body: { sessionId: string; concept: string; state: ConceptState | null }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/concepts`, { method: "POST", json: body }),
+  setDepthStyle: (courseId: string, body: { sessionId: string; depthStyle: DepthStyle }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/concepts`, { method: "POST", json: body }),
 
-  getSession: (id: string) => call<SessionBundle>(`/api/sessions/${id}`),
+  open: (courseId: string) => call<WorkspaceView>(`/api/courses/${courseId}/open`, { method: "POST" }),
+  view: (courseId: string, sessionId: string) => call<WorkspaceView>(`/api/courses/${courseId}?sessionId=${encodeURIComponent(sessionId)}`),
 
-  ask: (id: string, body: { question?: string; pointingAt?: string; explainMoreOf?: string }) =>
-    call<SessionBundle>(`/api/sessions/${id}/ask`, { method: "POST", json: body }),
+  send: (courseId: string, body: { sessionId: string; text: string; imageRefs: string[]; mode: ComposerMode; explainMoreOf?: string }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/messages`, { method: "POST", json: body }),
+  markProblem: (courseId: string, body: { sessionId: string; pdf: { docId: string; page: number }; text?: string }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/problems`, { method: "POST", json: body }),
+  chip: (courseId: string, body: { sessionId: string; messageId: string; answer: "yes" | "no" }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/chip`, { method: "POST", json: body }),
+  select: (courseId: string, body: { sessionId: string; problemId: string }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/select`, { method: "POST", json: body }),
+  attachDocument: (courseId: string, body: { sessionId: string; documentId: string }) =>
+    call<WorkspaceView>(`/api/courses/${courseId}/documents`, { method: "POST", json: body }),
+  action: (problemId: string, body: { sessionId: string; action: BoardActionInput }) =>
+    call<WorkspaceView>(`/api/problems/${problemId}/actions`, { method: "POST", json: body }),
+  plan: (problemId: string, sessionId: string) => call<WorkspaceView>(`/api/problems/${problemId}/plan`, { method: "POST", json: { sessionId } }),
+  editStatement: (problemId: string, body: { sessionId: string; statement: string }) =>
+    call<WorkspaceView>(`/api/problems/${problemId}`, { method: "PATCH", json: body }),
 
-  feedback: (id: string, turnId: string, kind: FeedbackKind | "flag") =>
-    call<SessionBundle>(`/api/sessions/${id}/feedback`, { method: "POST", json: { turnId, kind } }),
-
-  patch: (
-    id: string,
-    body: {
-      location?: Location;
-      task?: { label: string; text?: string; documentId?: string; page?: number };
-      step?: string;
-      closeSideQuestion?: boolean;
-      addDocument?: string;
-    },
-  ) => call<SessionBundle>(`/api/sessions/${id}`, { method: "PATCH", json: body }),
-
-  editConcept: (id: string, concept: string, state: ConceptState | null) =>
-    call<SessionBundle>(`/api/sessions/${id}/concepts`, { method: "POST", json: { concept, state } }),
-
-  setDepthStyle: (id: string, depthStyle: DepthStyle) =>
-    call<SessionBundle>(`/api/sessions/${id}/concepts`, { method: "POST", json: { depthStyle } }),
-
-  getProfile: () => call<{ profile: UserProfile | null }>("/api/profile"),
-
-  saveProfile: (body: { major: string; year: string; course: string; previousCourses: string; comfortableWith: string; style: DepthStyle }) =>
-    call<{ profile: UserProfile }>("/api/profile", { method: "PUT", json: body }),
-
-  upload: async (file: File) => {
+  uploadImage: async (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return call<{ ref: string }>("/api/uploads", { method: "POST", body: form });
+  },
+  uploadPdf: async (file: File) => {
     const form = new FormData();
     form.append("file", file);
     return call<{ document: DocumentMeta }>("/api/documents", { method: "POST", body: form });
   },
-
   patchDocument: (id: string, body: { pageCount?: number; pageLabels?: string[] }) =>
     call<{ document: DocumentMeta }>(`/api/documents/${id}`, { method: "PATCH", json: body }),
-
   pageCached: (id: string, page: number) => call<{ cached: boolean }>(`/api/documents/${id}/pages/${page}`),
-
   putPage: (id: string, page: number, image: string, text: string) =>
     call<{ ok: boolean }>(`/api/documents/${id}/pages/${page}`, { method: "PUT", json: { image, text } }),
 };

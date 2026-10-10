@@ -1,0 +1,150 @@
+{
+  "id": "05-first-order-ode",
+  "title": "First-order linear ODE",
+  "match": "dy/dt + 2y = 4",
+  "statement": "Solve the initial value problem $dy/dt + 2y = 4$ with $y(0) = 1$.",
+  "knownAnswer": {
+    "description": "y(t) = 2 − e^{−2t}",
+    "values": {
+      "y": "2 - exp(-2*t)"
+    }
+  },
+  "setup": {
+    "given": [
+      "$\\dfrac{dy}{dt} + 2y = 4$",
+      "$y(0) = 1$"
+    ],
+    "find": [
+      "$y(t)$"
+    ],
+    "assumptions": []
+  },
+  "referencePlan": {
+    "method": "Integrating factor, then the initial condition.",
+    "steps": [
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('exp(2*t)', t)",
+            "rhs": "2*exp(2*t)",
+            "variables": [
+              "t"
+            ]
+          }
+        ],
+        "concepts": [
+          "integrating factor"
+        ],
+        "kind": "equation",
+        "title": "Integrating factor",
+        "latex": "\\mu(t) = e^{\\int 2\\,dt} = e^{2t}",
+        "rationale": "Multiplying by μ turns the left side into the derivative of μy.",
+        "hint1": "The equation is linear in y. What makes the left side an exact derivative?",
+        "hint2": "Use μ = exp(∫P dt) with P = 2."
+      },
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('2*exp(2*t)', t)",
+            "rhs": "4*exp(2*t)",
+            "variables": [
+              "t"
+            ]
+          }
+        ],
+        "concepts": [
+          "integrating factor"
+        ],
+        "kind": "algebra",
+        "title": "Integrate both sides",
+        "latex": "\\frac{d}{dt}\\left(y e^{2t}\\right) = 4e^{2t} \\quad\\Rightarrow\\quad y e^{2t} = 2e^{2t} + C",
+        "rationale": "The left side is now a single derivative.",
+        "hint1": "After multiplying by e^{2t}, what is the left side the derivative of?",
+        "hint2": "Integrate 4e^{2t} with respect to t.",
+        "checkQuestion": "Why does the left side become d/dt(y e^{2t})?"
+      },
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('2 + C*exp(-2*t)', t) + 2*(2 + C*exp(-2*t))",
+            "rhs": "4",
+            "variables": [
+              "t",
+              "C"
+            ]
+          }
+        ],
+        "concepts": [
+          "first-order linear odes"
+        ],
+        "kind": "algebra",
+        "title": "General solution",
+        "latex": "y = 2 + C e^{-2t}",
+        "rationale": "Divide through by e^{2t}.",
+        "hint1": "Isolate y.",
+        "hint2": "Divide both sides by e^{2t}."
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "1 - 2",
+            "expected": -1
+          }
+        ],
+        "concepts": [
+          "initial value problems"
+        ],
+        "kind": "substitution",
+        "title": "Apply y(0) = 1",
+        "latex": "1 = 2 + C \\quad\\Rightarrow\\quad C = -1",
+        "rationale": "The initial condition fixes the constant.",
+        "hint1": "What is e^0?",
+        "hint2": "Put t = 0 and y = 1 into the general solution.",
+        "resultEquation": "C = -1"
+      },
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "diff('2 - exp(-2*t)', t) + 2*(2 - exp(-2*t))",
+            "rhs": "4",
+            "variables": [
+              "t"
+            ]
+          },
+          {
+            "type": "numeric",
+            "expr": "2 - exp(0)",
+            "expected": 1
+          }
+        ],
+        "concepts": [
+          "first-order linear odes"
+        ],
+        "kind": "result",
+        "title": "Solution",
+        "latex": "y(t) = 2 - e^{-2t}",
+        "rationale": "It satisfies both the ODE and y(0) = 1.",
+        "hint1": "Put C back into the general solution.",
+        "hint2": "Replace C with −1."
+      }
+    ],
+    "finalAnswer": {
+      "latex": "y(t) = 2 - e^{-2t}"
+    },
+    "solution": [
+      {
+        "symbol": "C",
+        "value": "-1"
+      },
+      {
+        "symbol": "y",
+        "value": "2 - exp(-2*t)"
+      }
+    ]
+  }
+}

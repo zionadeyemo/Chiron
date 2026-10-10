@@ -1,0 +1,75 @@
+{
+  "id": "e2e-unverifiable",
+  "title": "E2E verification fixture",
+  "match": "e2e verification fixture",
+  "statement": "E2E verification fixture: a bar of length 2 m carries a tension of 10 kN. Find the force per metre, f.",
+  "knownAnswer": {
+    "description": "f = 5 kN/m",
+    "values": {
+      "f": "5"
+    }
+  },
+  "setup": {
+    "given": [
+      "Length $L = 2\\ \\text{m}$",
+      "Tension $T = 10\\ \\text{kN}$"
+    ],
+    "find": [
+      "$f$"
+    ],
+    "assumptions": []
+  },
+  "referencePlan": {
+    "method": "Divide (with one deliberately wrong check, for the test).",
+    "steps": [
+      {
+        "kind": "algebra",
+        "title": "Divide the tension by the length",
+        "latex": "f = \\frac{T}{L} = \\frac{10}{2}",
+        "rationale": "Force per metre is total force over length.",
+        "hint1": "Per metre means divide by what?",
+        "hint2": "Divide T by L.",
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "10/2",
+            "expected": 4
+          }
+        ],
+        "concepts": [
+          "units"
+        ],
+        "resultEquation": "f = 5"
+      },
+      {
+        "kind": "result",
+        "title": "Answer",
+        "latex": "f = 5\\ \\text{kN/m}",
+        "rationale": "Done.",
+        "hint1": "Finish the division.",
+        "hint2": "Ten over two.",
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "10/2",
+            "expected": 5
+          }
+        ],
+        "concepts": [
+          "units"
+        ],
+        "resultEquation": "f = 5"
+      }
+    ],
+    "finalAnswer": {
+      "latex": "f = 5\\ \\text{kN/m}",
+      "value": 5
+    },
+    "solution": [
+      {
+        "symbol": "f",
+        "value": "5"
+      }
+    ]
+  }
+}

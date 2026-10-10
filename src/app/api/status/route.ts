@@ -1,7 +1,7 @@
+import { llmStatus } from "@/lib/llm";
+
 export const dynamic = "force-dynamic";
 
-import { tutorStatus } from "@/lib/tutor";
-
 export async function GET() {
-  return Response.json(tutorStatus());
+  return Response.json(llmStatus());
 }

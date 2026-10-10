@@ -1,30 +1,40 @@
 # CHIRON
 
-A study companion for college STEM problem-solving. The product bet: help that is the
-**right size**, aimed at **exactly** what the student is confused about, and **correct**.
+A step-by-step STEM tutor with a shared whiteboard. The bet: give the **minimum help** needed
+before the student can continue on their own, and make it **correct**.
 
-- **Read first:** [`docs/SPEC.md`](docs/SPEC.md) — the founding spec (survey findings, behaviours
-  in priority order, UI tone, what not to build). It wins any disagreement.
-- **Decisions & architecture:** [`docs/PLAN.md`](docs/PLAN.md).
+- **Current work — Iteration 2 (whiteboard tutoring):** [`docs/ITERATION-2-PROMPT.md`](docs/ITERATION-2-PROMPT.md)
+  is the brief; [`docs/ITERATION-2-PLAN.md`](docs/ITERATION-2-PLAN.md) is the plan;
+  [`docs/DECISIONS.md`](docs/DECISIONS.md) records every significant decision — add to it.
+- **Background:** [`docs/SPEC.md`](docs/SPEC.md) (V0 spec, survey findings), [`docs/ITERATION-2-AUDIT.md`](docs/ITERATION-2-AUDIT.md)
+  (state of the V0 code), [`docs/PLAN.md`](docs/PLAN.md) (V0 decisions).
 - **Next.js here is v16** — see [`AGENTS.md`](AGENTS.md); check `node_modules/next/dist/docs/`
   before using an unfamiliar API.
 
 ## Map
 
-- `src/lib/tutor/` — the LLM boundary. `index.ts` picks Anthropic, Gemini (detected from the key) or the offline mock;
-  `review.ts` holds the checks every provider applies to an answer (schema, math verified, length);
-  `prompts.ts` holds the Chiron and baseline system prompts; `packet.ts` builds the per-turn
-  context packet (never the whole transcript).
-- `src/lib/depth.ts` — deterministic depth controller (feedback → level + word budget).
-- `src/lib/learner.ts` — conservative learner-model update rules.
-- `src/lib/math.ts` — mathjs tools the model must use for any calculation.
-- `src/lib/store.ts` — local JSON persistence in `data/` (gitignored).
-- `src/lib/events.ts` — research instrumentation + session summary.
-- `src/lib/demo/` — the seeded demo (authored Chapter 7 material, Problem 7.18, learner).
+- `src/lib/llm/` — provider-neutral LLM layer. `index.ts` picks Anthropic, Gemini (detected from the key) or the
+  offline mock (`LLM_MOCK=1`, tests only); two tiers: **strong** (planner) and **fast** (chat, intake, reading work).
+  All structured output is validated with zod (`schema.ts`); `tools.ts` exposes the mathjs tools.
+- `src/lib/board/` — the whiteboard. `planner.ts` (plan → `verify.ts` → field-level repair), `project.ts`
+  (**the only path to the client** — revealed steps only), `reveal.ts` (next / hint / got-it / resume, pure),
+  `actions.ts` (server actions + events), `checkwork.ts` (verifier classifies, model only explains),
+  `intake.ts`, `chat.ts` (per-turn packet + review), `intent.ts` (rules first, then the model),
+  `memory.ts` / `memory-phrases.ts` (quiet memory), `prompts.ts`, `llm-schemas.ts`, `types.ts`.
+- `src/lib/workspace.ts` — courses, visits (a new visit after 30 min idle), messages, problems, the workspace view.
+- `src/lib/db/` — document-store interface with a local-file adapter in `data/` (`CHIRON_DATA_DIR`). Does not
+  work on Vercel — swap the adapter for Neon + Blob (DECISIONS D2).
+- `src/lib/events.ts` + `src/lib/summary.ts` — instrumentation and the metrics behind `/internal/summary`
+  (`INTERNAL_PASSWORD`).
+- `src/lib/depth.ts`, `learner.ts`, `math.ts`, `documents.ts` — depth budgets, learner model, mathjs, course material.
+- `src/components/` — `workspace/` (layout, problem menu, assumptions panel), `board/`, `chat/`, `material/`.
+- `fixtures/problems/` — planner eval set (`scripts/eval-planner.ts` → `docs/PLANNER-EVAL.md`);
+  `scripts/check-memory.ts` → `docs/MEMORY-CHECK.md`.
 
 ## Rules of thumb
 
-- Every behaviour change should serve the spec's priority order: right-sized help >
-  accuracy/honesty > context > learner model > pedagogy > continuity.
+- Unrevealed solution steps never leave the server — not in API responses, not in the chat model's context.
+- Never present unverified math as certain. Never mark a student's line correct unless the verifier agrees.
+- Memory is quiet: it shapes explanations, it isn't announced.
 - Keep the UI quiet: paper, margin notes, mono labels. No chat bubbles, gradients, or cards.
-- `npm run check` = typecheck + lint + build. Run it before calling work done.
+- `npm run check` = typecheck + lint + unit tests + build; `npm run test:e2e` = Playwright (mock LLM, port 3100). Run both before calling work done.

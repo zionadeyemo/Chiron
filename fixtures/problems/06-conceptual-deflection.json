@@ -1,0 +1,103 @@
+{
+  "id": "06-conceptual-deflection",
+  "title": "Simply supported vs. fixed–fixed deflection",
+  "match": "fixed–fixed beam",
+  "statement": "A simply supported beam and a fixed–fixed beam have the same span L and flexural rigidity EI and carry the same uniform load w. Without detailed calculation, explain which has the larger midspan deflection and roughly by what factor.",
+  "knownAnswer": {
+    "description": "The simply supported beam, about 5 times larger",
+    "values": {
+      "ratio": "5"
+    },
+    "mustMention": [
+      "simply supported"
+    ]
+  },
+  "setup": {
+    "given": [
+      "Same span $L$, flexural rigidity $EI$ and uniform load $w$",
+      "Beam 1: simply supported; beam 2: fixed at both ends"
+    ],
+    "find": [
+      "Which beam deflects more at midspan, and roughly by what factor"
+    ],
+    "assumptions": [
+      "Linear-elastic, small deflections"
+    ]
+  },
+  "referencePlan": {
+    "method": "Compare end restraint, then the standard midspan deflection formulas.",
+    "steps": [
+      {
+        "checks": [
+          {
+            "type": "none",
+            "reason": "qualitative comparison of restraint"
+          }
+        ],
+        "concepts": [
+          "boundary conditions"
+        ],
+        "kind": "concept",
+        "title": "Compare the end conditions",
+        "latex": "\\text{Fixed ends resist rotation} \\;\\Rightarrow\\; \\text{hogging moments at the supports reduce the sagging at midspan}",
+        "rationale": "Restraint at the ends takes over part of the bending, so the beam bends less in the middle.",
+        "hint1": "What can a fixed end do that a pin or roller can't?",
+        "hint2": "Think about the end moments a fixed support develops and what they do to the midspan curvature.",
+        "checkQuestion": "Where is the bending moment largest in the fixed–fixed beam?"
+      },
+      {
+        "checks": [
+          {
+            "type": "equivalence",
+            "lhs": "(5*w*L^4/(384*EI))/(w*L^4/(384*EI))",
+            "rhs": "5",
+            "variables": [
+              "w",
+              "L",
+              "EI"
+            ]
+          }
+        ],
+        "concepts": [
+          "beam deflection"
+        ],
+        "kind": "equation",
+        "title": "Standard midspan deflections",
+        "latex": "\\delta_{ss} = \\frac{5wL^4}{384EI}, \\qquad \\delta_{ff} = \\frac{wL^4}{384EI}",
+        "rationale": "These are the textbook results for each support condition.",
+        "hint1": "Both deflections have the same wL^4/EI form. What differs?",
+        "hint2": "Compare the numerical coefficients in the two standard formulas.",
+        "resultEquation": "ratio = 5"
+      },
+      {
+        "checks": [
+          {
+            "type": "numeric",
+            "expr": "5/1",
+            "expected": 5
+          }
+        ],
+        "concepts": [
+          "beam deflection"
+        ],
+        "kind": "result",
+        "title": "Conclusion",
+        "latex": "\\text{The simply supported beam deflects about } 5\\times \\text{ more at midspan.}",
+        "rationale": "The ratio of the coefficients is 5.",
+        "hint1": "Divide one deflection by the other.",
+        "hint2": "Divide the simply supported coefficient by the fixed–fixed one.",
+        "resultEquation": "ratio = 5"
+      }
+    ],
+    "finalAnswer": {
+      "latex": "\\text{Simply supported, about } 5\\times \\text{ larger}",
+      "value": 5
+    },
+    "solution": [
+      {
+        "symbol": "ratio",
+        "value": "5"
+      }
+    ]
+  }
+}

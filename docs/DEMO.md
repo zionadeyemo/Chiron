@@ -1,58 +1,46 @@
-# 5-minute demo script
+# 5-minute demo script (iteration 2)
 
-Setup: `npm run dev`, key in `.env.local`, open http://localhost:3000/demo. Each visit to `/demo`
-resets the demo learner (aerospace junior; knows statics, mechanics of materials, linear algebra).
+Setup: `npm run dev` with a live key in `.env.local`; open http://localhost:3000 and create a course
+called "Statics". (The V0 margin-tutor script is kept in [`DEMO-V0.md`](DEMO-V0.md).)
 
-Model answers vary; the notes below say what to look for, not the exact words.
+Model wording varies; the notes say what to look for, not the exact words.
 
-**0:00 — The screen (30 s).** Left: the material, open at p. 341 (superposition), with Problem
-7.18 pinned above it. Right: Chiron's margin. Bottom: the state strip. Point at **Assuming you
-know** (static equilibrium, shear/moment diagrams, Euler–Bernoulli) and **Might need
-refreshing** (compatibility conditions). "This is why it pitches answers where it does."
+**0:00 — Paste (30 s).** Paste into the composer and press Enter:
 
-**0:30 — "Why is that zero?"** Expect one or two sentences: B is a roller, so v_B = 0, citing
-p. 341, Eq. 7.6. Point out the margin line under it: depth tag (L1/L2) and the § citation.
-Optional: highlight "v_B = 0" on the page, click **Ask about this**, ask "why?" instead.
+> A simply supported beam AB of length 6 m (pin at A, roller at B) carries a point load of 12 kN
+> at 2 m from A and a uniformly distributed load of 3 kN/m over its full length. Determine the
+> vertical reactions at A and B.
 
-**1:15 — "Wait, what are the six components of strain again?"** A one-line answer (three normal,
-three shear strains), indented as an **Aside**, with a ◦ marker meaning general knowledge (it's not
-in this chapter). The composer shows *Aside · back to 7.18 →*.
+No "is this a problem?" question. Within a few seconds the board shows the **setup** (Given,
+Find, Assumptions) and Chiron says "Here's the setup. Want a hint for where to start, or the
+first step?" Say: *the full solution is being planned and verified right now, and none of it is
+on this page yet.*
 
-**1:45 — "Got it."** Chiron closes the aside and comes straight back: "Right, so for 7.18: …"
-with a prompt for the next move.
+**0:45 — Hint (30 s).** Once Hint and Next step unlock (~20 s with Gemini Pro), press **Hint**
+(or `H`). A nudge appears in the margin next to step 1 ("which point can you take moments
+about…"), not the step. Press it again: more specific, still no answer.
 
-**2:15 — "Okay what do I do next?"** The next step only (superpose Table 7.1 cases, set v_B = 0),
-not the solution. The **Current step** in the strip updates.
+**1:15 — Next step (30 s).** Press **Next step** (`N`). Step 1 appears: ΣM_A = 0 written out,
+with a small **verified** mark. Say: *every step was checked symbolically before you saw it.*
 
-**2:45 — "I think the reaction is wL/2."** (deliberately wrong) Chiron says it's wrong in its
-first words and points at why (that's the symmetric, simply-supported answer; the fixed end takes
-more). Look for **✓ checked**: hover it to see the math tool calls it ran.
+**1:45 — A question about the step (45 s).** Type "why moments about A?" The answer is short,
+about that step only (moments about A eliminate R_A so one equation has one unknown) and doesn't
+reveal step 2. Press **Explain more** for a deeper version.
 
-**3:30 — Explain more** (under that note). Exactly one level deeper: the reasoning step by step,
-not beam theory in general.
+**2:30 — I got it (20 s).** Press **I got it** (`G`). The board stops revealing; the composer
+switches to *Check my work*. Say: *this is the metric that matters — how few steps someone needed.*
 
-**4:00 — Too much** (under the longer note), then ask "So what's R_B then?" or "what next?". The
-next note is visibly shorter: the state strip's **Depth** shows L1 and a word cap (≤ N w).
+**2:50 — A wrong line, caught (40 s).** Type `6 R_B + 24 + 54 = 0` (sign error) and send.
+The line appears on the board marked **not right**, with a pointer at the signs of the load
+moments, not the corrected line.
 
-**4:30 — Click "compatibility conditions"** in the strip → *I know this*. That's a learner-model
-correction. Open **Learner model** to show the full editable profile.
+**3:30 — The correct line (30 s).** Type `R_B = 13`. Marked **correct** and placed against the
+matching step of the plan ("you’re ahead of the board" if it hasn’t been revealed). Then `R_A = 17`:
+correct, and once a line matches the plan’s last step the problem is complete — by the student.
 
-**4:45 — Summary** (top right). One sentence: questions, average words, depth feedback,
-explain-more, corrections, wrong steps caught. `/research` compares Chiron against baseline.
+**4:00 — Resume (40 s).** Go back to the courses page, then reopen "Statics". The board, the
+chat and where you were come back exactly; the course row now reads "1 solved".
+Open **What CHIRON assumes** to show the concepts it inferred, each one editable.
 
-To show the comparison arm, open `/demo?mode=baseline` and ask the same first question.
-
-## Three riskiest assumptions, and the metric that tests each
-
-1. **Short-by-default is what students want, and they'll tell us when the size is wrong.**
-   Metric: the depth feedback mix (*just right / too much / too little*) alongside the
-   *explain more* rate. Chiron wins only if *just right* is the most common rating. If *too
-   little* plus *explain more* dominate, the default is too terse.
-2. **A model plus a math tool won't state wrong things, including agreeing with a wrong
-   student.** Metric: *errors flagged by the student* should be zero after review. Read it
-   against *wrong student steps caught* and the share of calculation answers that were
-   *math-verified*.
-3. **Context and a learner model aim answers better, without the student re-explaining.**
-   Metric: *learner-model corrections* and *task/step corrections* should be rare, and average
-   words should stay well below baseline at an equal or better *just right* share. Lots of
-   corrections means our assumptions about the student are wrong.
+**4:40 — The numbers (20 s).** Open `/internal/summary`: this problem's line reads steps in plan,
+steps revealed before "I got it", hints, check-my-work results, and plan verification.

@@ -1,10 +1,10 @@
 import { z } from "zod";
+import { db, NotFoundError } from "@/lib/db";
+import { getDocument } from "@/lib/documents";
 import { handle } from "@/lib/http";
-import { NotFoundError } from "@/lib/session";
-import { getDocument, readDocumentFile, writeDocumentFile } from "@/lib/store";
 
 // The browser renders PDF pages with pdf.js and stores the PNG + extracted text here,
-// so the tutor can send the current page image to the vision model.
+// so the model can see the page image (vision) with the text as a supplement.
 
 const Body = z.object({
   image: z.string().startsWith("data:image/png;base64,"),
@@ -22,7 +22,7 @@ async function parse(ctx: RouteContext<"/api/documents/[id]/pages/[page]">) {
 export async function GET(_req: Request, ctx: RouteContext<"/api/documents/[id]/pages/[page]">) {
   return handle(async () => {
     const { id, n } = await parse(ctx);
-    return { cached: !!(await readDocumentFile(id, `page-${n}.png`)) };
+    return { cached: !!(await db().getBlob(`${id}/page-${n}.png`)) };
   });
 }
 
@@ -30,8 +30,8 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/documents/[id]/p
   return handle(async () => {
     const { id, n } = await parse(ctx);
     const { image, text } = Body.parse(await req.json());
-    await writeDocumentFile(id, `page-${n}.png`, Buffer.from(image.slice(image.indexOf(",") + 1), "base64"));
-    await writeDocumentFile(id, `page-${n}.txt`, text);
+    await db().putBlob(`${id}/page-${n}.png`, Buffer.from(image.slice(image.indexOf(",") + 1), "base64"), "image/png");
+    await db().putBlob(`${id}/page-${n}.txt`, Buffer.from(text, "utf8"), "text/plain");
     return { ok: true };
   });
 }
