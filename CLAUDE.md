@@ -22,8 +22,10 @@ before the student can continue on their own, and make it **correct**.
   `intake.ts`, `chat.ts` (per-turn packet + review), `intent.ts` (rules first, then the model),
   `memory.ts` / `memory-phrases.ts` (quiet memory), `prompts.ts`, `llm-schemas.ts`, `types.ts`.
 - `src/lib/workspace.ts` — courses, visits (a new visit after 30 min idle), messages, problems, the workspace view.
-- `src/lib/db/` — document-store interface with a local-file adapter in `data/` (`CHIRON_DATA_DIR`). Does not
-  work on Vercel — swap the adapter for Neon + Blob (DECISIONS D2).
+- `src/lib/db/` — document store, **scoped per visitor** (D16): `db()` resolves the visitor from the `chiron_vid`
+  cookie (or `runAsVisitor` in scripts/tests) on every call. `file.ts` (local, `data/visitors/<id>/`) or
+  `supabase.ts` (deployed; `docs/SUPABASE.sql`). `src/proxy.ts` issues the cookie and runs the access-code gate.
+  Deploying: `docs/DEPLOY.md`.
 - `src/lib/events.ts` + `src/lib/summary.ts` — instrumentation and the metrics behind `/internal/summary`
   (`INTERNAL_PASSWORD`).
 - `src/lib/depth.ts`, `learner.ts`, `math.ts`, `documents.ts` — depth budgets, learner model, mathjs, course material.
@@ -36,5 +38,7 @@ before the student can continue on their own, and make it **correct**.
 - Unrevealed solution steps never leave the server — not in API responses, not in the chat model's context.
 - Never present unverified math as certain. Never mark a student's line correct unless the verifier agrees.
 - Memory is quiet: it shapes explanations, it isn't announced.
+- Never read a visitor id from a request body or URL, and never add an unscoped storage path. Secrets stay server-only
+  (`npm run build` scans the client bundle for them).
 - Keep the UI quiet: paper, margin notes, mono labels. No chat bubbles, gradients, or cards.
 - `npm run check` = typecheck + lint + unit tests + build; `npm run test:e2e` = Playwright (mock LLM, port 3100). Run both before calling work done.

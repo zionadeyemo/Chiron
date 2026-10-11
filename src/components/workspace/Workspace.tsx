@@ -30,6 +30,7 @@ export function Workspace({ courseId }: { courseId: string }) {
   const [mode, setMode] = useState<ComposerMode>("normal");
   const [notice, setNotice] = useState<string | null>(null);
   const [tutor, setTutor] = useState<"live" | "mock" | "no_key" | null>(null);
+  const [keyHelp, setKeyHelp] = useState<string | undefined>();
   const [materialOpen, setMaterialOpen] = useState(false);
   const [location, setLocation] = useState<MaterialLocation | null>(null);
   const [working, setWorking] = useState<string | null>(null);
@@ -52,7 +53,13 @@ export function Workspace({ courseId }: { courseId: string }) {
       },
       (e) => setLoadError(e.message),
     );
-    api.status().then((s) => setTutor(s.tutor), () => undefined);
+    api.status().then(
+      (s) => {
+        setTutor(s.tutor);
+        setKeyHelp(s.help);
+      },
+      () => undefined,
+    );
   }, [courseId]);
 
   useEffect(() => {
@@ -263,7 +270,7 @@ export function Workspace({ courseId }: { courseId: string }) {
           }}
         />
         {view.course.mode === "baseline" && <span className="inline-block h-1.5 w-1.5 rounded-full border border-chiron" title="b" />}
-        {tutor === "no_key" && <span className="label normal-case tracking-normal text-oxblood">No API key — add LLM_API_KEY to .env.local and restart</span>}
+        {tutor === "no_key" && <span className="label normal-case tracking-normal text-oxblood" title={keyHelp}>No API key — see the home page for setup</span>}
         {tutor === "mock" && <span className="label normal-case tracking-normal text-oxblood">Offline mock tutor (LLM_MOCK=1)</span>}
         {notice && <span className="settle label normal-case tracking-normal text-chiron">{notice}</span>}
         <nav className="ml-auto flex items-center gap-5">

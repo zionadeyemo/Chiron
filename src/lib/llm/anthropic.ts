@@ -60,7 +60,7 @@ export class AnthropicLLM implements LLM {
       return res;
     } catch (err) {
       if (err instanceof LLMError) throw err;
-      if (err instanceof Anthropic.AuthenticationError) throw new LLMError("Anthropic rejected the API key in .env.local (LLM_API_KEY).", "auth");
+      if (err instanceof Anthropic.AuthenticationError) throw new LLMError("Anthropic rejected the API key (LLM_API_KEY).", "auth");
       if (err instanceof Anthropic.RateLimitError) throw new LLMError("Rate limited by the API — wait a moment and try again.", "rate_limit");
       if (err instanceof Anthropic.APIError) throw new LLMError(`API error ${err.status ?? ""}: ${err.message}`, "api");
       if (err instanceof Anthropic.APIConnectionError) throw new LLMError("Couldn't reach the API. Check your connection.", "network");

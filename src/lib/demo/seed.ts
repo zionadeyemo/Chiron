@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "../db";
+import type { IntakeOut } from "../board/llm-schemas";
 import type { DocumentMeta, KnowledgeState, Mode, UserProfile } from "../types";
 import { createCourse, ensureProfile, startOrResumeVisit, submitProblem } from "../workspace";
 import { DEMO_DOCUMENT_ID, DEMO_DOCUMENT_TITLE, DEMO_PAGES, DEMO_TASK_PAGE, PROBLEM_7_18 } from "./chapter7";
@@ -32,8 +33,22 @@ async function seedLearnerIfNew(): Promise<void> {
   });
 }
 
-export async function createDemoCourse(mode: Mode): Promise<string> {
-  await seedLearnerIfNew();
+/** Problem 7.18 as intake would read it, so seeding a new visitor costs no model call. */
+const DEMO_READ: IntakeOut = {
+  isProblem: true,
+  title: "Propped cantilever with a uniform load",
+  statement: PROBLEM_7_18,
+  given: ["Propped cantilever $AB$, length $L$, constant $EI$", "Fixed at $A$, roller at $B$", "Uniformly distributed load $w$ over the full length"],
+  find: ["Compatibility equation at $B$ with $R_B$ as the redundant", "$R_B$, $R_A$ and $M_A$", "The point of zero bending moment between $A$ and $B$"],
+  assumptions: ["Small deflections, linear elastic material (Euler–Bernoulli)"],
+};
+
+/**
+ * The demo course with Problem 7.18 submitted. `/demo` also sets up the fictional demo learner;
+ * a new visitor's automatic demo (`asNewVisitor`) leaves their own learner model untouched.
+ */
+export async function createDemoCourse(mode: Mode, opts: { asNewVisitor?: boolean } = {}): Promise<string> {
+  if (!opts.asNewVisitor) await seedLearnerIfNew();
   const doc: DocumentMeta = {
     id: DEMO_DOCUMENT_ID,
     kind: "demo",
@@ -49,6 +64,7 @@ export async function createDemoCourse(mode: Mode): Promise<string> {
     source: "pdf",
     pdf: { docId: DEMO_DOCUMENT_ID, page: DEMO_TASK_PAGE },
     text: PROBLEM_7_18,
+    read: opts.asNewVisitor ? DEMO_READ : undefined,
   });
   return course.id;
 }

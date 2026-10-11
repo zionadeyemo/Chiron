@@ -30,6 +30,17 @@ async function call<T>(url: string, init?: RequestInit & { json?: unknown }): Pr
   return data as T;
 }
 
+/** PUT a file to a signed storage upload URL (the URL itself is the permission; no keys). */
+async function putDirect(url: string, file: File, contentType = file.type) {
+  let res: Response;
+  try {
+    res = await fetch(url, { method: "PUT", headers: { "Content-Type": contentType, "x-upsert": "false" }, body: file });
+  } catch {
+    throw new ApiError("Couldn't upload the file. Check your connection and try again.", 0);
+  }
+  if (!res.ok) throw new ApiError(res.status === 413 ? "That file is too large." : `Upload failed (${res.status}).`, res.status);
+}
+
 export type BoardActionInput =
   | { type: "activate" | "fill" | "too_big" | "too_small"; stepIndex: number }
   | { type: "next" | "hint" | "got_it" | "resume" | "dismiss_check" }
@@ -38,7 +49,7 @@ export type BoardActionInput =
 export type ComposerMode = "normal" | "new_problem" | "my_work";
 
 export const api = {
-  status: () => call<{ tutor: "live" | "mock" | "no_key"; provider?: string; models?: { strong: string; fast: string } }>("/api/status"),
+  status: () => call<{ tutor: "live" | "mock" | "no_key"; help?: string; provider?: string; models?: { strong: string; fast: string } }>("/api/status"),
 
   listCourses: () => call<CourseSummary[]>("/api/courses"),
   createCourse: (name: string, mode: Mode) => call<{ course: CourseSummary["course"] }>("/api/courses", { method: "POST", json: { name, mode } }),
@@ -70,12 +81,30 @@ export const api = {
   editStatement: (problemId: string, body: { sessionId: string; statement: string }) =>
     call<WorkspaceView>(`/api/problems/${problemId}`, { method: "PATCH", json: body }),
 
+  // Uploads: ask the server for a signed URL and send the file straight to storage (deployed);
+  // with no URL (local files), send it through the API as before.
   uploadImage: async (file: File) => {
+    const { id, uploadUrl } = await call<{ id: string; uploadUrl: string | null }>("/api/uploads/sign", {
+      method: "POST",
+      json: { kind: "image", contentType: file.type, size: file.size },
+    });
+    if (uploadUrl) {
+      await putDirect(uploadUrl, file);
+      return { ref: id };
+    }
     const form = new FormData();
     form.append("file", file);
     return call<{ ref: string }>("/api/uploads", { method: "POST", body: form });
   },
   uploadPdf: async (file: File) => {
+    const { id, uploadUrl } = await call<{ id: string; uploadUrl: string | null }>("/api/uploads/sign", {
+      method: "POST",
+      json: { kind: "pdf", size: file.size },
+    });
+    if (uploadUrl) {
+      await putDirect(uploadUrl, file, "application/pdf");
+      return call<{ document: DocumentMeta }>("/api/documents", { method: "POST", json: { id, name: file.name } });
+    }
     const form = new FormData();
     form.append("file", file);
     return call<{ document: DocumentMeta }>("/api/documents", { method: "POST", body: form });

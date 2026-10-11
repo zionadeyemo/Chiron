@@ -7,7 +7,7 @@ import { handle } from "@/lib/http";
 // so the model can see the page image (vision) with the text as a supplement.
 
 const Body = z.object({
-  image: z.string().startsWith("data:image/png;base64,"),
+  image: z.string().regex(/^data:image\/(png|jpeg);base64,/).max(4_000_000), // stays under Vercel's 4.5 MB body cap
   text: z.string().max(100_000).default(""),
 });
 
@@ -22,7 +22,7 @@ async function parse(ctx: RouteContext<"/api/documents/[id]/pages/[page]">) {
 export async function GET(_req: Request, ctx: RouteContext<"/api/documents/[id]/pages/[page]">) {
   return handle(async () => {
     const { id, n } = await parse(ctx);
-    return { cached: !!(await db().getBlob(`${id}/page-${n}.png`)) };
+    return { cached: await db().hasBlob(`${id}/page-${n}.png`) };
   });
 }
 
@@ -30,7 +30,8 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/documents/[id]/p
   return handle(async () => {
     const { id, n } = await parse(ctx);
     const { image, text } = Body.parse(await req.json());
-    await db().putBlob(`${id}/page-${n}.png`, Buffer.from(image.slice(image.indexOf(",") + 1), "base64"), "image/png");
+    const type = image.startsWith("data:image/jpeg") ? "image/jpeg" : "image/png";
+    await db().putBlob(`${id}/page-${n}.png`, Buffer.from(image.slice(image.indexOf(",") + 1), "base64"), type); // key kept for existing data
     await db().putBlob(`${id}/page-${n}.txt`, Buffer.from(text, "utf8"), "text/plain");
     return { ok: true };
   });

@@ -223,10 +223,18 @@ test("personalization can be turned off per course", async ({ page }) => {
 });
 
 test("the internal summary reports the problems worked on", async ({ page }) => {
-  // Runs after the flows above, against the same event log. No INTERNAL_PASSWORD in dev → open.
+  // The summary covers this visitor's own event log (DECISIONS D16). No INTERNAL_PASSWORD in dev → open.
+  await newCourse(page, "E2E Summary");
+  await send(page, BEAM);
+  await expect(button(page, /^Next step/)).toBeEnabled({ timeout: 30_000 });
+  await button(page, /^Next step/).click();
+  await expect(steps(page)).toHaveCount(2);
+  await button(page, /^I got it/).click();
+  await expect(button(page, /^Resume guidance/)).toBeVisible();
   await page.goto("/internal/summary");
   await expect(page.getByRole("heading", { name: "Validation summary" })).toBeVisible();
   await expect(page.getByText(/Median steps before .I got it./)).toBeVisible();
   await expect(page.getByText(/Steps in plan: \d+ · Revealed before .I got it.: \d+/).first()).toBeVisible();
   await expect(page.getByText(/Check my work: \d+ \(\d+ correct, \d+ errors? caught/).first()).toBeVisible();
+  await expect(page.getByText(/Revealed before .I got it.: 1 /)).toBeVisible();
 });

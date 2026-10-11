@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { handle } from "@/lib/http";
 import { getView, submitProblem } from "@/lib/workspace";
+import { spendLlmRequest } from "@/lib/rate-limit";
 
-export const maxDuration = 120;
+// 300 s is the most Vercel allows on Hobby (and the default on Pro) with Fluid compute.
+export const maxDuration = 300;
 
 /** A problem marked in the material (PDF page), optionally with its selected text. */
 const Body = z.object({
@@ -15,6 +17,7 @@ export async function POST(req: Request, ctx: RouteContext<"/api/courses/[id]/pr
   const { id } = await ctx.params;
   return handle(async () => {
     const body = Body.parse(await req.json());
+    await spendLlmRequest();
     await submitProblem(id, body.sessionId, { source: "pdf", pdf: body.pdf, text: body.text });
     return getView(id, body.sessionId);
   });

@@ -25,6 +25,7 @@ import { logEvent, type EventContext } from "./events";
 import { styleToScore } from "./depth";
 import { applyStudentEdit } from "./learner";
 import type { ConceptState, DepthStyle, DocumentMeta, Mode, UserProfile } from "./types";
+import { currentVisitor } from "./visitor";
 
 // The workspace service: courses, visits, problems, chat threads and message routing.
 
@@ -75,7 +76,27 @@ export async function createCourse(name: string, mode: Mode = "chiron", document
   return course;
 }
 
+// A visitor's first visit seeds the demo course, scoped to them. Deduplicated per visitor within
+// this server instance (the home page can ask twice in quick succession).
+const seeding = new Map<string, Promise<void>>();
+
+async function seedNewVisitor(): Promise<void> {
+  if (await db().get<UserProfile>("profiles", ME)) return;
+  const visitorId = await currentVisitor();
+  let pending = seeding.get(visitorId);
+  if (!pending) {
+    pending = (async () => {
+      await ensureProfile();
+      const { createDemoCourse } = await import("./demo/seed");
+      await createDemoCourse("chiron", { asNewVisitor: true });
+    })().finally(() => seeding.delete(visitorId));
+    seeding.set(visitorId, pending);
+  }
+  await pending;
+}
+
 export async function listCourses(): Promise<CourseSummary[]> {
+  await seedNewVisitor();
   const [courses, problems, boards, visits] = await Promise.all([
     db().list<Course>("courses"),
     db().list<Problem>("problems"),

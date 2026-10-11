@@ -39,7 +39,7 @@ Open http://localhost:3000.
 
 | Variable | Default | |
 |---|---|---|
-| `LLM_API_KEY` | — | Anthropic or Gemini key. Required. |
+| `LLM_API_KEY` | — | Anthropic or Gemini key. Required. (`GEMINI_API_KEY`, `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY` also work.) |
 | `INTERNAL_PASSWORD` | — | Protects `/internal/summary`. Unset: open in dev, closed in production. **New.** |
 | `LLM_PROVIDER` | detected | `anthropic` or `gemini`, to override detection. |
 | `LLM_PLANNER_MODEL` | `gemini-pro-latest` / `claude-opus-5-5` | Strong tier: builds and repairs solution plans. **New.** |
@@ -75,21 +75,12 @@ Runs the planner on the six fixtures in `fixtures/problems/` against the live mo
 
 ## Data
 
-Stored locally in `data/` (gitignored): profile, courses, visits, problems, plans, boards, threads,
-uploaded documents, and one JSONL event log per course. Delete the folder to reset.
+Locally: `data/visitors/<visitor-id>/` (gitignored), one folder per browser — profile, courses, visits,
+problems, plans, boards, threads, uploads, and one JSONL event log per course. Deployed: Supabase
+(see below). Delete the folder to reset.
 
 ## Deploying to Vercel
 
-The app builds on Vercel as is, but these must change first (DECISIONS D2):
-
-1. **Storage.** Local files don't persist on Vercel. Implement the `DocStore` interface in
-   `src/lib/db` on Neon Postgres (documents as JSONB rows, events as an append-only table) and Vercel
-   Blob (uploads, page images). Apart from read-only fixtures (`src/lib/fixtures.ts`),
-   nothing outside `src/lib/db` touches the file system.
-2. **Function duration.** Planning takes 15–60 s; `api/problems/[id]/plan` sets `maxDuration = 300` and the
-   other model-calling routes 120 s. Check that your Vercel plan allows that function duration.
-3. **Uploads.** Vercel request bodies cap at 4.5 MB. Images are already capped at 4 MB; course PDFs (60 MB
-   locally) need client-side uploads straight to Blob.
-4. **Access.** There are no accounts: everyone shares one profile. Put the deployment behind Vercel
-   password protection (or add auth) and set `INTERNAL_PASSWORD`.
-5. **Env vars.** Set `LLM_API_KEY`, `INTERNAL_PASSWORD`, and optionally the model/effort overrides above.
+Vercel + one Supabase project, no accounts: each browser is an anonymous visitor and every read and
+write is scoped to it on the server. Step-by-step setup, environment variables and a post-deploy
+check: [`docs/DEPLOY.md`](docs/DEPLOY.md). Schema: [`docs/SUPABASE.sql`](docs/SUPABASE.sql).

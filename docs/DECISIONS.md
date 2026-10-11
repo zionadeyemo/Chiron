@@ -104,3 +104,27 @@ verifier matched the final result in Check my work) or by full reveal (the last 
 Access: `INTERNAL_PASSWORD`, entered once into a form; the cookie holds a salted hash, httpOnly,
 scoped to `/internal`. With no password set the page is open in development and closed in
 production. No third-party analytics.
+
+### D16 — Shared deployment: anonymous visitors, Supabase behind the same DocStore (deployment)
+Goal: a URL for a handful of testers this week, without accounts.
+- **Visitors.** `src/proxy.ts` gives every browser a random UUID in an HttpOnly `chiron_vid` cookie
+  (1 year) and replaces a missing or malformed one. Server code reads it from the cookie only.
+- **Isolation in the store.** `db()` resolves the visitor on every call and throws without one;
+  stores are constructed per visitor (`FileStore`: `data/visitors/<id>/`; `SupabaseDocStore`: every
+  query filtered on `visitor_id`, every object under `<id>/`). Application code is unchanged, and an
+  id belonging to someone else is simply "not found" (404). Scripts use `runAsVisitor`.
+- **Supabase**: one key-value `docs` table + `events` + a private bucket (`docs/SUPABASE.sql`),
+  service-role key on the server only, RLS on with no policies. `update` is optimistic (a `version`
+  column) since several function instances may write at once.
+- **Selection**: Supabase if `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`; otherwise local files —
+  except on Vercel production/preview, where the build and the server start both fail loudly.
+- **Cost protection, not auth**: optional `ACCESS_CODES` gate (HMAC cookie; the code is recorded
+  per visitor in `meta/access`), and 60 model calls per visitor per hour (`meta/llm-<hour>`).
+- **Uploads** go straight from the browser to Storage with a signed upload URL issued for a key under
+  the visitor's prefix; downloads are ≤10-minute signed URLs after the same check. Locally, the
+  existing multipart routes are used. PDF pages were already rendered client-side by pdf.js.
+- **New visitors** get the demo course on first use, with a pre-read statement (no model call) and
+  without the fictional demo learner (that's only for `/demo`).
+- **Changed**: `/internal/summary` now shows the viewer's own visitor data (it can't read across
+  visitors through the store); cross-tester numbers come from SQL on `events`.
+- **Local data** written before this change (directly under `data/`) is no longer read.

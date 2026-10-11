@@ -106,7 +106,7 @@ export class GeminiLLM implements LLM {
       }
       if (err instanceof ApiError) {
         if (err.status === 401 || err.status === 403 || (err.status === 400 && /api key/i.test(err.message))) {
-          throw new LLMError("Google rejected the API key in .env.local (LLM_API_KEY).", "auth");
+          throw new LLMError("Google rejected the API key (LLM_API_KEY).", "auth");
         }
         if (err.status === 404) throw new LLMError(`Gemini model "${model}" isn't available to this key. Check LLM_PLANNER_MODEL / LLM_CHAT_MODEL.`, "api");
         if (err.status === 429) throw new LLMError("Rate limited by the Gemini API — wait a moment and try again.", "rate_limit");

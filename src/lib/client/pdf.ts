@@ -103,7 +103,10 @@ export function ensurePageUploaded(documentId: string, pageNumber: number): Prom
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       await page.render({ canvas, viewport }).promise;
-      await api.putPage(documentId, pageNumber, canvas.toDataURL("image/png"), await pageText(page));
+      // PNG keeps equations crisp; a dense page falls back to JPEG to stay under the upload cap.
+      let image = canvas.toDataURL("image/png");
+      for (const quality of [0.85, 0.7]) if (image.length > 3_900_000) image = canvas.toDataURL("image/jpeg", quality);
+      await api.putPage(documentId, pageNumber, image, await pageText(page));
     })();
     p.catch(() => uploads.delete(key));
     uploads.set(key, p);

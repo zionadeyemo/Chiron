@@ -164,7 +164,7 @@ export function Home() {
 
       {status?.tutor === "no_key" && (
         <p className="mt-6 border-l-2 border-oxblood pl-4 font-serif text-[15px] text-oxblood">
-          No API key found. Add <code className="font-mono text-[13px]">LLM_API_KEY=…</code> to <code className="font-mono text-[13px]">.env.local</code> and restart the dev server.
+          {status.help}
         </p>
       )}
       {status?.tutor === "live" && status.models && (

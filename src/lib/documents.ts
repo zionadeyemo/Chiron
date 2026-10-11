@@ -25,7 +25,7 @@ export async function pageParts(docId: string, page: number): Promise<Part[]> {
     if (p) parts.push({ type: "text", text: p.markdown.replace(/^\[\[fig:\w+\]\]$/gm, "").trim() + (p.figures ? `\n[Figure description] ${p.figures}` : "") });
   } else {
     const [img, txt] = await Promise.all([db().getBlob(`${docId}/page-${page}.png`), db().getBlob(`${docId}/page-${page}.txt`)]);
-    if (img) parts.push({ type: "image", mediaType: "image/png", base64: img.data.toString("base64") });
+    if (img) parts.push({ type: "image", mediaType: img.contentType === "image/jpeg" ? "image/jpeg" : "image/png", base64: img.data.toString("base64") });
     const text = txt?.data.toString("utf8").trim();
     if (text) parts.push({ type: "text", text: `Extracted text (may be garbled; trust the image for equations):\n${text.slice(0, 12000)}` });
   }

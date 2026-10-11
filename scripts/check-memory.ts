@@ -29,7 +29,10 @@ async function main() {
   for (const method of ["structured", "toolTurn", "text"]) {
     const original = llm[method].bind(llm);
     llm[method] = (req) => {
-      requests.push({ label: req.label, learner: req.parts.some((p) => p.type === "text" && p.text?.includes("<learner>")) });
+      requests.push({
+        label: req.label,
+        learner: req.parts.some((p) => p.type === "text" && p.text?.includes("<learner>")),
+      });
       return original(req);
     };
   }
@@ -42,10 +45,26 @@ async function main() {
     p.previousCourses = ["Statics", "Mechanics of Materials", "Linear Algebra"];
     const at = new Date().toISOString();
     p.knowledge = {
-      "static equilibrium": { state: "known", source: "profile", updatedAt: at },
-      "cantilever deflection": { state: "known", source: "profile", updatedAt: at },
-      "method of superposition": { state: "learning", source: "profile", updatedAt: at },
-      "compatibility conditions": { state: "uncertain", source: "profile", updatedAt: at },
+      "static equilibrium": {
+        state: "known",
+        source: "profile",
+        updatedAt: at,
+      },
+      "cantilever deflection": {
+        state: "known",
+        source: "profile",
+        updatedAt: at,
+      },
+      "method of superposition": {
+        state: "learning",
+        source: "profile",
+        updatedAt: at,
+      },
+      "compatibility conditions": {
+        state: "uncertain",
+        source: "profile",
+        updatedAt: at,
+      },
     };
   });
 
@@ -54,7 +73,12 @@ async function main() {
     if (!personalize) await ws.updateCourse(course.id, "", { personalize: false });
     const sessionId = await ws.startOrResumeVisit(course.id);
     const from = requests.length;
-    await ws.sendMessage(course.id, { sessionId, text: fixture.statement, imageRefs: [], mode: "new_problem" });
+    await ws.sendMessage(course.id, {
+      sessionId,
+      text: fixture.statement,
+      imageRefs: [],
+      mode: "new_problem",
+    });
     const view = await ws.getView(course.id, sessionId);
     const problemId = view.board!.problem.id;
     await board.ensurePlan(problemId, sessionId);
@@ -63,25 +87,46 @@ async function main() {
       const v = await ws.getView(course.id, sessionId);
       if (!v.board?.hasNextStep) break;
       await board.applyAction(problemId, sessionId, { type: "next" });
-      await ws.sendMessage(course.id, { sessionId, text: QUESTIONS[q++ % QUESTIONS.length], imageRefs: [], mode: "normal" });
+      await ws.sendMessage(course.id, {
+        sessionId,
+        text: QUESTIONS[q++ % QUESTIONS.length],
+        imageRefs: [],
+        mode: "normal",
+      });
       if (i === 1) {
         const t = await ws.getView(course.id, sessionId);
         const last = [...t.messages].reverse().find((m) => m.role === "chiron" && m.depth != null);
-        if (last) await ws.sendMessage(course.id, { sessionId, text: "", imageRefs: [], mode: "normal", explainMoreOf: last.id });
+        if (last)
+          await ws.sendMessage(course.id, {
+            sessionId,
+            text: "",
+            imageRefs: [],
+            mode: "normal",
+            explainMoreOf: last.id,
+          });
       }
     }
     const final = await ws.getView(course.id, sessionId);
     const replies = final.messages.filter((m) => m.role === "chiron").map((m) => m.text);
     const phrases = replies.map((r) => findMemoryPhrase(r)).filter(Boolean);
-    return { replies, phrases, requests: requests.slice(from), revealed: final.board!.steps.length - 1 };
+    return {
+      replies,
+      phrases,
+      requests: requests.slice(from),
+      revealed: final.board!.steps.length - 1,
+    };
   }
 
   console.log("▶ personalized guided problem");
   const on = await guided(true, 8);
-  console.log(`  ${on.replies.length} replies, ${on.phrases.length} memory phrases, ${on.requests.filter((r) => r.learner).length}/${on.requests.length} requests with learner context`);
+  console.log(
+    `  ${on.replies.length} replies, ${on.phrases.length} memory phrases, ${on.requests.filter((r) => r.learner).length}/${on.requests.length} requests with learner context`,
+  );
   console.log("▶ personalization off");
   const off = await guided(false, 3);
-  console.log(`  ${off.replies.length} replies, ${off.phrases.length} memory phrases, ${off.requests.filter((r) => r.learner).length}/${off.requests.length} requests with learner context`);
+  console.log(
+    `  ${off.replies.length} replies, ${off.phrases.length} memory phrases, ${off.requests.filter((r) => r.learner).length}/${off.requests.length} requests with learner context`,
+  );
 
   const byLabel = (rs: typeof requests) =>
     Object.entries(
@@ -117,7 +162,10 @@ async function main() {
   console.log(`\n${pass1 && pass2 ? "PASS" : "FAIL"} — wrote docs/MEMORY-CHECK.md`);
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Storage is scoped to a visitor; this run is its own throwaway visitor.
+import("../src/lib/visitor")
+  .then(({ runAsVisitor }) => runAsVisitor(crypto.randomUUID(), main))
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

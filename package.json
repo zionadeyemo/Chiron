@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/check-client-secrets.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
     "@google/genai": "^2.27.0",
+    "@supabase/supabase-js": "^2.117.3",
     "katex": "0.16.47",
     "mathjs": "^15.2.0",
     "next": "16.4.0",
